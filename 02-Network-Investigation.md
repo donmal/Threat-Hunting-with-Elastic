@@ -6,10 +6,15 @@ Following confirmation that the malicious OneNote document **invoice.one** had b
 The primary objectives of this phase were:
 
   •	Identify external infrastructure contacted by the infected host.
+  
   •	Determine the source of the malicious document.
+  
   •	Validate whether download activity occurred.
+  
   •	Identify command-and-control communications.
+  
   •	Correlate DNS activity with network connections.
+  
   •	Reconstruct attacker communications.
   
 Analysis of Zeek DNS logs, Zeek connection logs, and Sysmon network events enabled reconstruction of the network component of the intrusion. The investigation identified multiple suspicious domains, including **file.io**, **pastebin.com**, and **ngrok.io**, revealing evidence of payload delivery, command retrieval, and command-and-control communications. 
