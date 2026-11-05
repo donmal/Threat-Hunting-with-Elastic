@@ -1,8 +1,9 @@
 # Hunting for Stuxbot – Threat Hunting & Incident Response Investigation
+Write-up of Hack The Box Academy labs. Practice work. 
 
 ## Overview
 
-This repository documents a complete threat hunting investigation performed against a simulated malware intrusion known as **Stuxbot**.
+This repository documents a hands-on threat hunting and incident response investigation involving **Stuxbot**, a simulated malware intrusion analyzed within a controlled Hack The Box Academy lab environment.  
 
 The investigation aimed to determine whether organizational systems had been compromised, reconstruct the attacker’s activity, identify persistence mechanisms, uncover credential theft attempts, and document indicators of compromise through endpoint and network telemetry analysis.
 
@@ -18,16 +19,16 @@ The investigation was performed using multiple telemetry sources, including:
 
 # Investigation Objectives
 
-The investigation focused on answering the following questions:
+The investigation focused on the following objectives:
 
-- How did the attacker gain initial access?
-- Which endpoint was compromised first?
-- What payloads were downloaded and executed?
-- Was persistence established?
-- Was command-and-control communication observed?
-- Was credential theft attempted?
-- Was internal reconnaissance performed?
-- Was lateral movement preparation identified?
+- Identify the initial access vector.
+- Determine the initially compromised endpoint.
+- Identify downloaded payloads and reconstruct their execution. 
+- Investigate attacker persistence mechanisms. 
+- Analyze potential command-and-control (C2) communications.
+- Investigate credential access attempts.
+- Examine internal reconnaissance activity.
+- Identify potential lateral movement preparation.
 
 ---
 
@@ -42,12 +43,14 @@ The investigation focused on answering the following questions:
 | Monitoring Platform | Elastic Stack |
 | Network Telemetry | Zeek |
 | Endpoint Telemetry | Sysmon |
+| Script Execution Telemetry | PowerShell Script Block Logging |
+| Additional Security Telemetry | Windows Event Logs |
 
 ---
 
 # Investigation Methodology
 
-The investigation followed a structured threat hunting workflow:
+The investigation followed a structured, evidence-driven threat hunting workflow:
 
 1. Identify suspicious file activity.
 2. Reconstruct the process execution chain.
@@ -95,16 +98,17 @@ Credential Access
         ▼
 Discovery
 ```
+This diagram summarizes the attack stages investigated and does not necessarily represent the exact chronological order of every observed event.
 
 ---
 
 # Executive Summary
 
-The investigation confirmed that the simulated **Stuxbot** malware successfully compromised a Windows workstation following user execution of a malicious OneNote document.
+The investigation confirmed that the simulated **Stuxbot** malware was associated with the compromise of a Windows workstation in the simulated environment following user execution of a malicious OneNote document.
 
-Evidence demonstrated the download and execution of additional payloads, communication with external attacker-controlled infrastructure, establishment of persistence, credential theft attempts using **Mimikatz DCSync**, and internal Active Directory reconnaissance through **PowerView**.
+Evidence demonstrated the download and execution of additional payloads, communication with external attacker-controlled infrastructure, persistence-related activity, and post-exploitation techniques involving credential access and Active Directory reconnaissance. The investigation also examined activity associated with **Mimikatz DCSync** and **PowerView**.
 
-By correlating endpoint telemetry (Sysmon and Windows Event Logs) with network telemetry (Zeek DNS and connection logs), it was possible to reconstruct the complete intrusion lifecycle and identify multiple high-confidence Indicators of Compromise (IOCs) suitable for future threat hunting and detection engineering activities.
+By correlating endpoint telemetry (Sysmon and Windows Event Logs) with network telemetry (Zeek DNS and connection logs), it was possible to reconstruct key stages of the simulated intrusion and identify multiple Indicators of Compromise (IOCs) and potential detection opportunities for future threat hunting and threat hunting and detection engineering activities. 
 
 ---
 
