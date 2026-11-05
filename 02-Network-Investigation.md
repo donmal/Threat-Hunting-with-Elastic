@@ -5,12 +5,13 @@
 Following confirmation that the malicious OneNote document **invoice.one** had been created on workstation **WS001**, the investigation shifted toward network telemetry to determine how the payload entered the environment and whether the compromised host established communications with infrastructure.
 The primary objectives of this phase were:
 
-•	Identify external infrastructure contacted by the infected host.
-•	Determine the source of the malicious document.
-•	Validate whether download activity occurred.
-•	Identify command-and-control communications.
-•	Correlate DNS activity with network connections.
-•	Reconstruct attacker communications.
+  •	Identify external infrastructure contacted by the infected host.
+  •	Determine the source of the malicious document.
+  •	Validate whether download activity occurred.
+  •	Identify command-and-control communications.
+  •	Correlate DNS activity with network connections.
+  •	Reconstruct attacker communications.
+  
 Analysis of Zeek DNS logs, Zeek connection logs, and Sysmon network events enabled reconstruction of the network component of the intrusion. The investigation identified multiple suspicious domains, including **file.io**, **pastebin.com**, and **ngrok.io**, revealing evidence of payload delivery, command retrieval, and command-and-control communications. 
 The findings established that the compromised workstation downloaded malicious content from external infrastructure and maintained communication with attacker-controlled services.
 
