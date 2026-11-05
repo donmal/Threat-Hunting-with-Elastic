@@ -4,6 +4,7 @@
 
 Following confirmation that the malicious OneNote document **invoice.one** had been created on workstation **WS001**, the investigation shifted toward network telemetry to determine how the payload entered the environment and whether the compromised host established communications with infrastructure.
 The primary objectives of this phase were:
+
 •	Identify external infrastructure contacted by the infected host.
 •	Determine the source of the malicious document.
 •	Validate whether download activity occurred.
