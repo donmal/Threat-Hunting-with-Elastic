@@ -1,4 +1,5 @@
 # 01 – Initial Access Investigation
+Hack The Box Academy - Simulated Threat Hunting Investigation | Practice Work
 
 ## Executive Summary
 
@@ -6,7 +7,7 @@ This phase of the investigation focused on identifying the initial compromise ve
 
 Threat Intelligence indicated that the threat actor commonly leveraged malicious Microsoft OneNote documents to gain initial access. The primary objective of this investigation was to determine whether this technique had been observed within the monitored environment, identify the affected endpoint, establish the initial attack timeline, and collect evidence supporting the continuation of the investigation.
 
-Analysis of Sysmon and Windows telemetry confirmed the presence of a suspicious OneNote document named **invoice.one**. Further examination revealed Alternate Data Stream (ADS) activity, file creation events, and subsequent network telemetry that strongly suggested the document represented the initial infection vector.
+Analysis of Sysmon and Windows telemetry identified file creation and Alternate Data Stream (ADS) telemetry associated with a suspicious OneNote document named **invoice.one**. These findings, together with the provided Threat Intelligence, supported treating the document as a suspected initial access artifact, pending confirmation through execution and network evidence. 
 
 The evidence collected during this phase established the foundation for the remaining stages of the investigation.
 
@@ -61,7 +62,7 @@ Payload Download
 Command and Control
 ```
 
-Because this attack technique was explicitly documented within the Threat Intelligence report, any suspicious OneNote document observed within the environment was treated as a high-priority investigative lead.
+Because this attack technique was explicitly documented within the Threat Intelligence report, OneNote artifacts matching the reported attack characteristics were prioritized for investigation.
 
 ---
 
@@ -121,17 +122,17 @@ The investigation therefore began by searching for Alternate Data Stream activit
 
 # Event ID 15 Investigation
 
-## Query
+## Detection Query - Alternate Data Stream Activity
 
 ```text
 event.code:15 AND file.name:*invoice.one
 ```
 
-## Why This Query?
+## Investigation Rationale
 
-Sysmon Event ID 15 (**FileCreateStreamHash**) records creation or modification of Alternate Data Streams (ADS).
+Sysmon Event ID 15 (**FileCreateStreamHash**) records creation of Alternate Data Streams (ADS) and associated file stream metadata. 
 
-Threat actors frequently abuse ADS to conceal malicious content within otherwise legitimate files.
+Threat actors can abuse ADS to conceal malicious content within otherwise legitimate files.
 
 Example:
 
@@ -151,7 +152,9 @@ invoice.one
 
 the hidden stream may contain malicious content invisible during normal usage.
 
-Because the Threat Intelligence report described advanced attacker tradecraft, ADS activity associated with a OneNote document represented a strong indicator requiring further investigation.
+However, the presence of an ADS event alone does not establish malicious activity. The specific stream name, originating process and surrounding events must be examined before determining whether the activity represents suspicious payload staging.
+
+Because the Threat Intelligence report described advanced attacker tradecraft, ADS activity associated with a OneNote document represented an investigative lead requiring further investigation.
 
 ---
 
@@ -161,13 +164,13 @@ The query returned telemetry associated with **invoice.one**, confirming the pre
 
 Although compromise was not yet confirmed, the following observations justified continued investigation:
 
-- ADS activity is uncommon.
+- ADS activity was observed on a file matching the reported attack artifact.
 - The filename matched Threat Intelligence reporting.
-- The event timing aligned with other suspicious activity.
+- The event provided a timestamp for correlation with file creation and subsequent activity.
 
 ---
 
-## Analyst Assessment
+## Investigative Pivot 
 
 At this stage the investigation sought to answer several questions:
 
@@ -177,6 +180,8 @@ At this stage the investigation sought to answer several questions:
 - Was subsequent network activity observed?
 
 To answer these questions, file creation telemetry was investigated next.
+
+The ADS event established **invoice.one** as a relevant artifact for further examination. The investigation pivoted to Sysmon Event ID 11 to verify file creation and identify the associated endpoint.
 
 ---
 
@@ -193,17 +198,17 @@ Sysmon Event ID 15 showing Alternate Data Stream activity associated with **invo
 
 # Event ID 11 Investigation
 
-## Query
+## Detection Query - File Creation
 
 ```text
 event.code:11 AND file.name:invoice.one*
 ```
 
-## Why This Query?
+## Investigation Rationale
 
-Sysmon Event ID 11 (**FileCreate**) confirms that a file was successfully created on disk.
+Sysmon Event ID 11 (**FileCreate**) records file creation activity on the monitored endpoint. 
 
-Whereas Event ID 15 suggested hidden content, Event ID 11 confirmed that the suspicious document physically existed on the endpoint.
+Whereas Event ID 15 identified file stream activity, Event ID 11 confirmed that the suspicious document had been created on the endpoint.
 
 ---
 
@@ -224,7 +229,7 @@ The event also contained valuable investigative context including:
 
 ## Timeline Significance
 
-The observed sequence became:
+The observed sequence included the following events:
 
 ```text
 File Created
@@ -232,19 +237,18 @@ File Created
         ▼
 Alternate Data Stream Activity
 ```
-
-This pattern is consistent with attacker staging behavior.
+The relationship and chronological order of these events should be established using their recorded timestamps. Together, they supported further investigation of the document as a potential initial access artifact.
 
 ---
 
-## Analyst Assessment
+## Investigative Assessment
 
 The combination of:
 
 - Sysmon Event ID 11
 - Sysmon Event ID 15
 
-significantly increased confidence that **invoice.one** represented a malicious artifact rather than a benign document.
+provided correlated file-system evidence associated with **invoice.one**. While these events did not independently confirm malicious execution, they strengthened the basis for further investigation when considered alongside the Threat Intelligence report.
 
 At this stage, the file became the primary investigative pivot for all subsequent analysis.
 
@@ -274,13 +278,13 @@ Analysis of the Event ID 11 results identified:
 
 **Figure 3 – Host Identification**
 
-Host metadata identifying the compromised workstation **WS001** associated with the suspicious file **invoice.one**.
+Host metadata identifying the workstation under investigation, **WS001** associated with the suspicious file **invoice.one**.
 
 ![Figure 3](images/initial-access/figure3_host_identification.png)
 
 ---
 
-## Why Host Identification Matters
+## Investigation Significance 
 
 Identifying the affected endpoint enabled:
 
@@ -293,13 +297,13 @@ Identifying the affected endpoint enabled:
 
 # Network Connection Investigation
 
-## Query
+## Detection Query - Endpoint Network Connections
 
 ```text
 event.code:3 AND host.hostname:WS001
 ```
 
-## Why Event ID 3?
+## Investigation Rationale
 
 Sysmon Event ID 3 records network connection activity and provides:
 
@@ -312,7 +316,7 @@ Sysmon Event ID 3 records network connection activity and provides:
 
 ## Findings
 
-The compromised workstation was identified as:
+The workstation under investigation was identified as:
 
 **WS001**
 
@@ -328,7 +332,7 @@ This address became the primary pivot point for the network investigation docume
 
 **Figure 4**
 
-Sysmon Event ID 3 identifying network activity originating from the compromised workstation **WS001**, and confirming source IP **192.168.28.130**.
+Sysmon Event ID 3 identifying network activity originating from the workstation **WS001**, and confirming source IP **192.168.28.130**.
 
 ![Figure 4](images/initial-access/figure4_network_connection.png)
 
@@ -360,8 +364,10 @@ Network Investigation Initiated
 
 | Tactic | Technique |
 |---------|-----------|
-| Initial Access | T1204 – User Execution |
-| Defense Evasion | T1564.004 – Hide Artifacts: NTFS File Attributes |
+| Initial Access | T1204 – User Execution (requires corroborating process execution evidence)|
+| Defense Evasion | T1564.004 – Hide Artifacts: NTFS File Attributes (requires confirmation of deliberate ADS abuse) |
+
+These techniques were identified as relevant to the suspected attack chain. Their applicability should be validated against process execution evidence and ADS stream metadata in the subsequent investigation phases. 
 
 ---
 
@@ -370,9 +376,10 @@ Network Investigation Initiated
 This investigation identified several detection opportunities for SOC teams:
 
 - Monitor external downloads of **.one** files.
-- Alert on Sysmon Event ID 15 (Alternate Data Streams).
+- Monitor suspicious Sysmon Event ID 15 activity, correlating ADS stream names, file paths, and associated processes to reduce false positives.
 - Detect **ONENOTE.EXE** spawning child processes such as **cmd.exe** or **powershell.exe**.
 - Monitor suspicious file creation within user download locations.
+- Correlate Sysmon Event IDs 11 and 15 to identify potentially suspicious file and ADS activity. 
 
 ---
 
@@ -385,4 +392,4 @@ This phase successfully established that:
 - File creation was verified.
 - The affected endpoint (**WS001**) was identified.
 - Source IP **192.168.28.130** was confirmed.
-- Sufficient evidence existed to continue the investigation into execution, persistence, command-and-control communications, and credential access.
+- Correlation of file creation, ADS activity, and endpoint telemetry established the basis for further investigation into execution, persistence, command-and-control communications, and credential access.
