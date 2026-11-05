@@ -23,12 +23,18 @@ The findings established that the compromised workstation downloaded malicious c
 # Investigation Objectives 
 
 The objectives of this phase were:
-•	Identify network activity originating from WS001.
-•	Identify suspicious DNS queries.
-•	Determine the source of invoice.one.
-•	Verify network connections following DNS resolution.
-•	Identify command-and-control infrastructure.
-•	Correlate host telemetry with network telemetry.
+
+    •	Identify network activity originating from WS001.
+    
+    •	Identify suspicious DNS queries.
+    
+    •	Determine the source of invoice.one.
+    
+    •	Verify network connections following DNS resolution.
+
+    •	Identify command-and-control infrastructure.
+
+    •	Correlate host telemetry with network telemetry.
 
 # Starting Point 
 
