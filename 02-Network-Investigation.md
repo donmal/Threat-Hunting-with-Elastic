@@ -125,53 +125,33 @@ Filtering removed common background DNS traffic, allowing suspicious domains to 
 # DNS Resolution Analysis 
 
 Inspection of the DNS event revealed:
-34.197.10.85
-3.213.216.16
-These addresses were returned by DNS.
-This means:
-WS001
-    ↓
-Asked for file.io
-    ↓
-DNS returned:
+
 34.197.10.85
 3.213.216.16
 
-# Why DNS Resolution Alone Is Not Enough 
+The DNS response associated **file.io** with the resolved IP address 34.197.10.85 and 3.213.216.16, providing specific network indicators for subsequent connection verification. 
+
+# Connection Validation Rationale
 
 A DNS query does not prove communication occurred.
-Example:
-User types website
-        ↓
-DNS lookup occurs
-        ↓
-Connection never happens
+
 Therefore the next step was verifying network connections.
 
 # Connection Verification 
 
 The investigation pivoted into connection logs.
-Objective:
-Determine whether WS001 actually communicated with the returned IP addresses.
- 
-# Investigation Logic 
 
-Required chain:
-DNS Query
-      ↓
-DNS Response
-      ↓
-Network Connection
-      ↓
-File Creation
-Only when all four exist can download activity be confidently established.
+Zeek connection telemetry was examined to verify whether **WS001** established connections with the IP addresses identified through DNS resolution. 
+ 
+# Evidence Correlation
+
+DNS queries, resolved IP addresses, network connections, and endpoint file creation events were correlated to reconstruct the suspected payload delivery sequency. Although these events support the download hypothesis, confirming the transfer of a specific file requires additional file-transfer or process-level evidence.
  
 ## Findings 
 
 Network telemetry confirmed connections to the file.io infrastructure.
-This provided strong evidence that:
-invoice.one
-originated from the identified external service.
+
+This provided supporting evidence that **file.io** may have been involved in delivering **invoice.one** to the affected endpoint.
 
 ## Evidence
 
@@ -184,37 +164,38 @@ DNS telemetry identified repeated queries for **file.io**, indicating potential 
 ## Timeline Reconstruction
 
 Correlation between:
+
 •	DNS activity
 •	Connection activity
 •	File creation
+
 revealed a consistent timeline.
+
 DNS Query
       ↓
 Connection
       ↓
 invoice.one Created
-The timing strongly supported download activity.
+
+The timing supported the hypothesis that **invoice.one** was delivered through the identified external infrastructure. 
+
+The sequence represents a correlation of observed events. Confirmation of the exact delivery mechanism requires additional evidence linking the network transaction to the created file.
 
 # Discovery of Pastebin
 
 Further analysis identified references to:
-pastebin.com
+
+**pastebin.com**
 
 Unlike file.io, which appeared to be used for payload delivery, Pastebin was associated with retrieval of PowerShell instructions executed during the next phase of the intrusion. 
 
-# Why Pastebin Matters 
+# Infrastructure Assessment  
 
-Pastebin is frequently abused by attackers to:
-•	Host PowerShell payloads
-•	Store encoded commands
-•	Deliver second-stage malware
-It is commonly used because it appears legitimate.
+Pastebin is a legitimate text-sharing platform that can also host remotely retrieved scripts and commands. Its presence in the investigated network activity provided an additional lead for correlating external communications with subsequent PowerShell execution.
 
-## Threat Hunting Assessment 
+## Investigative Assessment 
 
-Pastebin activity immediately after:
-invoice.one
-execution significantly increased confidence that the host had been compromised.
+The observed Pastebin-related activity was treated as a potential indicator of remote script retrieval. Correlation with PowerShell Script Block Logging was required to establish whether content hosted on the platform was retrieved and executed. 
 
 ## Evidence
 
@@ -231,26 +212,18 @@ ngrok.io
 
 Repeated communications over multiple days distinguished ngrok activity from one-time payload delivery and suggested the presence of persistent command-and-control communications.
  
-# What Is ngrok? 
+# Infrastructure Assessment 
 
 Ngrok is a legitimate tunneling service.
-It allows:
-Internal Host
-      ↓
-Encrypted Tunnel
-      ↓
-Public Internet
-Attackers frequently abuse ngrok because:
-•	Infrastructure changes rapidly.
-•	HTTPS traffic appears normal.
-•	Traditional blocking is difficult.
+
+Ngrok provides tunneling capabilities that can expose internal services through externally accessible endpoints. Within the investigated activity, recurring connections associated with ngrok infrastructure were examined as potential indicators of unauthorized remote access or C2 communications.
 
 # DNS Investigation of ngrok 
 
-Query:
-ngrok.io
-revealed multiple DNS resolutions.
+DNS telemetry identified multiple resolutions associated with **ngrok.io**.
+
 Returned infrastructure included:
+
 18.158.249.75
 
 3.125.102.39
@@ -259,46 +232,43 @@ Returned infrastructure included:
 
 **Figure 5 – Network connections to resolved file.io infrastructure**
 
-Network telemetry confirmed successful communication between the compromised workstation and the infrastructure associated with **file.io**, validating payload delivery.
+Network telemetry confirmed successful communication between the compromised workstation and the infrastructure associated with **file.io**, supporting the suspected payload delivery sequence. 
 
 ![Figure 5](images/network-investigation/figure5_fileio_connections.png)
 
 ## Command and Control Assessment 
 
 The investigation observed:
+
 •	Repeated DNS requests
 •	Repeated HTTPS connections
 •	Activity spanning multiple days
-These observations are consistent with:
-Command and Control (C2)
-behavior.
 
-# Why Persistence Was Suspected 
+These observations are consistent with potential command-and-control (C2) activity, although recurring communications alone do not establish malicious command exchange.
+
+# Recurring Communication Analysis
 
 The attacker infrastructure continued to appear:
-Day 1
-↓
-Day 2
-↓
-Additional Connections
+
 This suggested:
-•	Malware survived execution
-•	Automated callbacks existed
-•	Attacker communications remained active
+
+Repeated communications across multiple days raised the possibility of automated callbacks or sustained remote access. Additional endpoint evidence was required to determine whether the activity resulted from an established persistence mechanism.
 
 ### Assessment 
 
 Although repeated communications with the identified infrastructure were observed during the investigation, the primary objective of this phase was to identify and validate the external infrastructure used throughout the intrusion.
 
-The collected DNS telemetry, resolved IP addresses, and verified network connections provided sufficient evidence to conclude that the compromised workstation successfully communicated with attacker-controlled infrastructure consistent with command-and-control (C2) behaviour.
+The collected DNS telemetry, resolved IP addresses, and verified network connections provided sufficient evidence to conclude that the compromised workstation successfully communicated with external infrastructure associated with the suspected intrusion. The recurring communication patterns warranted further investigation for potential C2 activity.
 
 ## MITRE ATT&CK Mapping 
 
 | Tactic | Technique |
 |---------|-----------|
-| Command and Control | T1071 – Application Layer Protocol |
-| Command and Control | T1572 – Protocol Tunneling |
-| Command and Control | T1105 – Ingress Tool Transfer |
+| Command and Control | T1071 – Application Layer Protocol (potential C2 over application-layer protocol) |
+| Command and Control | T1572 – Protocol Tunneling (requires evidence of actual tunneling) |
+| Command and Control | T1105 – Ingress Tool Transfer (requires evidence of transferred tools or payloads) |
+
+These mappings represent techniques relevant to the suspected attack behaviour. Network connections and DNS resolution alone do not confirm all mapped techniques.
 
 ## Detection Opportunities 
 
@@ -309,26 +279,33 @@ Organizations should monitor:
 | Pastebin | Detect PowerShell retrieving remote content |
 | ngrok | Monitor tunneling services within enterprise environments |
 | Repeated HTTPS callbacks | Identify long-term communications with rare external infrastructure |
+| DNS-to-connection correlation | Correlate suspicious DNS resolutions with subsequent outbound connections from the same endpoint |
+
+These detection opportunities represent proposed monitoring use cases rather than production-validated detection rules.
 
 ## Key Findings 
 
 - DNS telemetry identified suspicious external infrastructure.
-- file.io was identified as the malware delivery platform.
-- Network connections confirmed successful payload retrieval.
-- Pastebin hosted additional PowerShell content.
-- ngrok infrastructure was repeatedly contacted.
-- Command-and-control communications were established. 
+- **file.io** was identified as a suspected malware delivery platform.
+- Network connections to resolved **file.io** infrastructure were verified, supporting the suspected payload delivery sequence.
+- Pastebin-related activity was identified for correlation with PowerShell execution evidence.
+- Repeated ngrok-related activity was identified across the investigated period.
+- Recurring external communications were consistent with potential C2 activity requiring further endpoint-level validation. 
 
 ## Lessons Learned 
 
 1.	DNS telemetry frequently provides the earliest evidence of compromise.
 2.	File-sharing platforms remain common malware delivery mechanisms.
-3.	Network telemetry is essential for validating download activity.
+3.	Network telemetry supports suspected download investigations, while attribution of specific transferred files requires additional evidence.
 4.	Tunneling platforms such as ngrok should be monitored closely.
-5.	Long-term communication patterns often reveal persistence.
+5.	Recurring external communications can indicate potential C2 activity and warrant investigation for persistence mechanisms.
 
 ## Conclusion 
 
-Network investigation confirmed that the compromised workstation communicated with attacker-controlled infrastructure and downloaded malicious content.
-DNS telemetry identified file.io, pastebin.com, and ngrok.io as key components of the attack chain. Connection logs verified communication with resolved infrastructure, while repeated activity across multiple days strongly suggested active command-and-control communications.
-These findings established the external infrastructure supporting the intrusion and provided the foundation for analyzing process execution, PowerShell activity, persistence mechanisms, and credential access attempts in the next phase of the investigation. 
+Network investigation identified external communications associated with the affected workstation and provided supporting evidence for suspected payload delivery.
+
+DNS telemetry identified **file.io**, **pastebin.com**, and **ngrok.io** as external infrastructure associated with the suspected attack sequence.
+
+Connection logs verified communication with resolved infrastructure, while repeated activity across multiple days raised concerns about potential sustained C2 activity.
+
+These findings established the network indicators requiring further investigation and provided the foundation for analyzing process execution, PowerShell activity, persistence mechanisms, and credential access attempts in the next phase of the investigation. 
