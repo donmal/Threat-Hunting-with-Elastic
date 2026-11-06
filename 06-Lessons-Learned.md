@@ -539,12 +539,6 @@ working together.
 
 # What Each Source Contributed
 
-Source	Contribution
-Sysmon	Processes, Files, DNS, Network
-Windows Logs	Host Activity
-PowerShell Logs	Script Visibility
-Zeek	Network Visibility
-
 Each telemetry source provided a different investigative perspective. Sysmon supported endpoint process and file analysis, Windows Security logs provided relevant operating system and authentication activity, PowerShell logs exposed script execution details, and Zeek contributed network-level observations.
 
 # Key Observation
