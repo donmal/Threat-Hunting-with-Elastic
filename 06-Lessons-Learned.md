@@ -57,11 +57,6 @@ DCSync
 
 This sequence summarizes the principal execution and post-exploitation stages identified during the investigation. It should be interpreted as a high-level reconstruction rather than proof that every artifact formed a direct parent-child process relationship.
 
-# Screenshot Placeholder
-
-Insert Screenshot Here
-Caption:
-Figure 1 – Complete Stuxbot attack chain reconstructed during the investigation.
 
 ## Lesson 1 – User Execution Remains One of the Biggest Risks
 
@@ -102,12 +97,6 @@ Deploy:
 
 Prioritize attachment inspection and user-execution controls capable of detecting embedded scripts and suspicious child-process creation, rather than relying exclusively on file extensions or known malicious hashes.
 
-# Screenshot Placeholder
-
-Insert Screenshot Here
-Caption:
-Figure 2 – Initial phishing document observed during the investigation.
-
 ## Lesson 2 – OneNote Can Be Abused for Malware Delivery
 
 The attack leveraged:
@@ -143,12 +132,6 @@ event.code:1 AND process.parent.name:"ONENOTE.EXE"
 
 OneNote spawning command interpreters or scripting engines is an unusual parent-child process relationship that warrants investigation, particularly when associated with recently downloaded documents or subsequent network activity. The query is a hunting starting point, not a standalone high-fidelity detection rule.
 
-# Screenshot Placeholder
-
-Insert Screenshot Here
-Caption:
-Figure 3 – OneNote spawning suspicious child processes.
-
 ## Lesson 3 – Process Chains Reveal the Entire Story
 
 A single event rarely explains an intrusion.
@@ -183,11 +166,6 @@ What did it start?
 
 Correlate process identifiers, parent-process identifiers, timestamps, command-line arguments, file paths, and network activity to reconstruct execution sequences and distinguish legitimate administrative behavior from suspicious activity.
 
-# Screenshot Placeholder
-
-Insert Screenshot Here
-Caption:
-Figure 4 – Parent-child process relationship analysis.
 
 ## Lesson 4 – PowerShell Remains a Primary Attack Vector
 
@@ -226,11 +204,6 @@ process.command_line:*Invoke-WebRequest*
 
 These indicators should be combined with PowerShell Script Block Logging (Event ID 4104), process ancestry, user context, and network telemetry to reduce false positives and improve detection confidence.
 
-# Screenshot Placeholder
-
-Insert Screenshot Here
-Caption:
-Figure 5 – Malicious PowerShell execution.
 
 ## Lesson 5 – Public Services Are Frequently Abused
 
@@ -268,11 +241,6 @@ The investigation highlighted how publicly accessible services can support diffe
 
 Correlate access to file-sharing, paste-hosting, and tunneling services with endpoint execution telemetry, downloaded file artifacts, unusual process activity, and destination reputation. Apply service restrictions according to organizational requirements rather than indiscriminately blocking every public platform.
 
-# Screenshot Placeholder
-
-Insert Screenshot Here
-Caption:
-Figure 6 – Legitimate services abused during the attack.
 
 ## Lesson 6 – DNS Is Extremely Valuable
 
@@ -301,11 +269,6 @@ dns.question.name:*pastebin*
 
 Validate field mappings and wildcard syntax against the deployed Elastic index configuration. Domain matches should be correlated with the initiating process and surrounding network activity before being classified as malicious.
 
-# Screenshot Placeholder
-
-Insert Screenshot Here
-Caption:
-Figure 7 – DNS evidence supporting attacker infrastructure discovery.
 
 ## Lesson 7 – Command & Control Can Hide in Plain Sight
 
@@ -347,11 +310,6 @@ These domains are examples of tunneling services and should not automatically be
 
 Correlating Sysmon network connection events with DNS telemetry and process execution records can help identify suspicious tunneling activity even when the contents of the network traffic are encrypted.
 
-# Screenshot Placeholder
-
-Insert Screenshot Here
-Caption:
-Figure 8 – Command-and-control communications identified through ngrok.
 
 ## Lesson 8 – Persistence Often Uses Simple Mechanisms
 
@@ -394,11 +352,6 @@ Extend monitoring to scheduled tasks, Run/RunOnce registry keys, Startup folder 
 
 File creation alone does not confirm persistence. Analysts should establish whether the artifact was configured to execute automatically through a persistence mechanism.
 
-# Screenshot Placeholder
-
-Insert Screenshot Here
-Caption:
-Figure 9 – Persistence artifact identified during investigation.
 
 ## Lesson 9 – Active Directory Is the Ultimate Target
 
@@ -432,11 +385,6 @@ The activity suggested that the attacker was attempting to extend access beyond 
 
 Monitor unexpected Active Directory enumeration, privileged account activity, suspicious access to LSASS, and execution of known credential-access or reconnaissance tooling. Correlate endpoint evidence with domain controller security events to determine the scope of attempted or successful compromise.
 
-# Screenshot Placeholder
-
-Insert Screenshot Here
-Caption:
-Figure 10 – Active Directory reconnaissance using SharpHound.
 
 ## Lesson 10 – DCSync Is a Critical Alert
 
@@ -472,11 +420,6 @@ Prioritize investigation of Windows Security Event ID 4662 where appropriate aud
 
 Where unauthorized DCSync activity is confirmed, treat the incident as a potential domain-level credential compromise. Scope affected accounts, review replication privileges, contain attacker access, and follow an appropriate credential recovery process. KRBTGT password resets may be necessary in confirmed compromise scenarios and should follow a carefully coordinated recovery procedure.
 
-# Screenshot Placeholder
-
-Insert Screenshot Here
-Caption:
-Figure 11 – Credential theft activity identified through Mimikatz.
 
 ## Lesson 11 – Multiple Log Sources Are Essential
 
@@ -511,11 +454,6 @@ Correlating endpoint and network telemetry made it possible to connect suspiciou
 
 Effective threat hunting requires understanding the visibility and limitations of each log source. Analysts should use timestamps, host identifiers, process relationships, destination addresses, and user context to validate findings across multiple sources rather than relying on isolated events.
 
-# Screenshot Placeholder
-
-Insert Screenshot Here
-Caption:
-Figure 12 – Multi-source correlation throughout the investigation.
 
 ## Lesson 12 – Threat Hunting Beats Reactive Detection
 
