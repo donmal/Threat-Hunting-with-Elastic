@@ -33,20 +33,35 @@ The objectives of this investigation phase were:
 Earlier stages of the investigation established the following attack chain:
 
 invoice.one
+
       ↓
+      
 ONENOTE.EXE
+
       ↓
+      
 cmd.exe
+
       ↓
+      
 invoice.bat
+
       ↓
+      
 powershell.exe
+
       ↓
+      
 Pastebin Payload
+
       ↓
+      
 default.exe
+
       ↓
+      
 Ngrok C2
+
 
 Previous investigation phases identified malicious execution, remote payload retrieval and Ngrok-related network communications. Potential command-and-control activity and persistence indicators were also identified, although these mechanisms were not conclusively established.
 
