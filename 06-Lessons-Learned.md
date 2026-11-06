@@ -32,28 +32,51 @@ The recommendations below are derived from artifacts and telemetry examined duri
 The attack chain unfolded as follows:
 
 invoice.one
+
         ↓
+        
 ONENOTE.EXE
+
         ↓
+        
 OneNoteM.exe
+
         ↓
+        
 cmd.exe
+
         ↓
+        
 invoice.bat
+
         ↓
+        
 powershell.exe
+
         ↓
+        
 Pastebin Payload
+
         ↓
+        
 default.exe
+
         ↓
+        
 Ngrok C2
+
         ↓
+        
 SharpHound
+
         ↓
+        
 Mimikatz
+
         ↓
+        
 DCSync
+
 
 This sequence summarizes the principal execution and post-exploitation stages identified during the investigation. It should be interpreted as a high-level reconstruction rather than proof that every artifact formed a direct parent-child process relationship.
 
