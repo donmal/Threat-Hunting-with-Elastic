@@ -43,7 +43,7 @@ process.name:"powershell.exe"
 
 *PowerShell execution observed following the malicious batch file.*
 
-![Figure 1](figures/figure_1_powershell_execution.png)
+![Figure 1](https://raw.githubusercontent.com/donmal/Threat-Hunting-with-Elastic/main/images/ioc-and-detections/figure_1_powershell_execution.png)
 
 The query was used to identify PowerShell process creation events and examine their command-line arguments in the context of the initial execution chain.
 
@@ -109,7 +109,7 @@ These queries represent additional hunting opportunities rather than confirmatio
 
 *PowerShell retrieving a remote payload from Pastebin.*
 
-![Figure 2](figures/figure_2_pastebin_payload.png)
+![Figure 2](https://raw.githubusercontent.com/donmal/Threat-Hunting-with-Elastic/main/images/ioc-and-detections/figure_2_pastebin_payload.png)
 
 ---
 
@@ -156,7 +156,7 @@ powershell.file.script_block_text:*share*
 
 *PowerView functions recovered through PowerShell Script Block Logging.*
 
-![Figure 3](figures/figure_3_powerview_scriptblock.png)
+![Figure 3](https://raw.githubusercontent.com/donmal/Threat-Hunting-with-Elastic/main/images/ioc-and-detections/figure_3_powerview_scriptblock.png)
 
 The query was used to examine PowerShell script block contents associated with network share enumeration, providing additional visibility beyond process creation telemetry.
 
@@ -200,7 +200,7 @@ MITRE ATT&CK
 
 *SharpHound execution observed during post-exploitation.*
 
-![Figure 4](figures/figure_4_sharphound_execution.png)
+![Figure 4](https://raw.githubusercontent.com/donmal/Threat-Hunting-with-Elastic/main/images/ioc-and-detections/figure_4_sharphound_execution.png)
 
 SharpHound execution was identified as part of the Active Directory reconnaissance phase. Its collection capabilities can support the identification of privileged relationships and potential attack paths within a domain environment.
 
@@ -242,7 +242,7 @@ process.command_line:*dcsync*
 
 *Mimikatz execution and DCSync process arguments.*
 
-![Figure 5](figures/figure_5_mimikatz_dcsync.png)
+![Figure 5](https://raw.githubusercontent.com/donmal/Threat-Hunting-with-Elastic/main/images/ioc-and-detections/figure_5_mimikatz_dcsync.png)
 
 ---
 
