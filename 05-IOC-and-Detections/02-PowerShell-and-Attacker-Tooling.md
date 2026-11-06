@@ -8,6 +8,8 @@ Analysis of Windows Sysmon telemetry and PowerShell Script Block Logging also re
 
 Together, these artifacts provide high-confidence evidence of deliberate attacker activity targeting the Active Directory environment.
 
+The investigation correlated process execution telemetry, PowerShell command-line artifacts, and script block contents to reconstruct attacker activity and identify detection opportunities across the intrusion chain.
+
 ---
 
 # Investigation Objectives
@@ -43,6 +45,8 @@ process.name:"powershell.exe"
 
 ![Figure 1](figures/figure_1_powershell_execution.png)
 
+The query was used to identify PowerShell process creation events and examine their command-line arguments in the context of the initial execution chain.
+
 ---
 
 # Remote Payload Retrieval
@@ -64,11 +68,13 @@ allowing remote code to be downloaded and executed entirely in memory.
 
 This behavior significantly reduces forensic artifacts left on disk.
 
+The observed command demonstrates a download-and-execute technique in which PowerShell retrieves remote script content and immediately evaluates it. This provides evidence of remote code execution without requiring the retrieved script to be saved as a standalone file.
+
 ---
 
 ## Detection Opportunities
 
-The following command-line patterns should be considered highly suspicious:
+The following command-line patterns should be considered potentially suspicious when correlated with execution context, parent processes, and network activity:
 
 ```text
 Invoke-WebRequest
@@ -95,6 +101,7 @@ process.command_line:*DownloadString*
 ```text
 process.command_line:*iex*
 ```
+These queries represent additional hunting opportunities rather than confirmation that every listed command was observed during the investigation.
 
 ---
 
@@ -108,7 +115,7 @@ process.command_line:*iex*
 
 # Encoded PowerShell
 
-Attackers frequently encode PowerShell commands to evade signature-based detections.
+Encoded PowerShell execution was considered as an additional hunting opportunity because attackers may use encoded commands to obscure execution arguments.
 
 Typical indicators include:
 
@@ -120,11 +127,12 @@ Typical indicators include:
 FromBase64String
 ```
 
-Recommended hunting query:
+Supplementary Hunting Query:
 
 ```text
 process.command_line:*-enc*
 ```
+This query was not presented as a confirmed finding of encoded PowerShell execution in the Stuxbot intrusion.
 
 ---
 
@@ -150,6 +158,8 @@ powershell.file.script_block_text:*share*
 
 ![Figure 3](figures/figure_3_powerview_scriptblock.png)
 
+The query was used to examine PowerShell script block contents associated with network share enumeration, providing additional visibility beyond process creation telemetry.
+
 ---
 
 # Offensive Tooling Identified
@@ -163,7 +173,7 @@ Multiple offensive security tools were recovered during the investigation.
 | Mimikatz | Credential theft |
 | default.exe | Primary malware payload |
 
-The simultaneous appearance of these tools indicates a mature post-exploitation workflow rather than opportunistic malware execution.
+The presence of these tools suggests a structured post-exploitation sequence involving Active Directory reconnaissance, potential privilege escalation, and credential access activity.
 
 ---
 
@@ -192,6 +202,8 @@ MITRE ATT&CK
 
 ![Figure 4](figures/figure_4_sharphound_execution.png)
 
+SharpHound execution was identified as part of the Active Directory reconnaissance phase. Its collection capabilities can support the identification of privileged relationships and potential attack paths within a domain environment.
+
 ---
 
 # Mimikatz
@@ -205,6 +217,8 @@ lsadump::dcsync /domain:eagle.local /all /csv exit
 ```
 
 This indicates an attempted **DCSync** operation rather than local credential dumping.
+
+The observed command attempts to retrieve domain credential material through Active Directory replication functionality. The command-line evidence supports an attempted DCSync operation but does not independently establish that credential extraction succeeded.
 
 Detection query:
 
@@ -240,7 +254,8 @@ Observed PowerShell behaviors included:
 - In-memory execution
 - Script Block Logging artifacts
 - Active Directory reconnaissance
-- Credential theft preparation
+- PowerShell retrieving and immediately executing remote content from untrusted infrastructure
+- PowerShell downloading remote content
 
 These behaviors collectively provide high-confidence indicators of malicious activity.
 
@@ -269,6 +284,8 @@ Recommended monitoring includes:
 - Unusual PowerShell network activity
 - PowerShell executed from temporary directories
 
+These severity categories are illustrative detection priorities, not validated alert classifications from the lab environment.
+
 ---
 
 # MITRE ATT&CK
@@ -281,6 +298,8 @@ Recommended monitoring includes:
 | Discovery | Permission Group Discovery | T1069 |
 | Credential Access | DCSync | T1003.006 |
 
+The technique mappings reflect observed execution and reconnaissance activity, together with the attempted DCSync operation identified through Mimikatz process arguments.
+
 ---
 
 # Phase Summary
@@ -290,3 +309,5 @@ PowerShell served as the primary execution engine throughout the Stuxbot intrusi
 Combined with Script Block Logging, Sysmon process telemetry, and command-line analysis, it was possible to reconstruct payload delivery, identify offensive tooling, and document attacker tradecraft with high confidence.
 
 These findings provide valuable detection opportunities that can be integrated into enterprise threat hunting and detection engineering workflows.
+
+This phase demonstrated how correlating endpoint process telemetry with PowerShell Script Block Logging can reveal malicious execution chains, remote payload retrieval, Active Directory reconnaissance, and attempted credential access.
