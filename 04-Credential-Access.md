@@ -80,9 +80,7 @@ SharpHound.exe
 
 The identified artifact was consistent with the deployment of Active Directory reconnaissance tooling. Confirmation of the specific data collected would require additional execution telemetry or recovered collection output.
 
-# Screenshot Placeholder
-
-Caption: Figure 1 – SharpHound artifact identified during default.exe investigation.
+# Figure 1 – SharpHound artifact identified during default.exe investigation.
 
 ![Figure 1](images/credential-access/figure1_sharphound_artifact.png)
 
@@ -114,9 +112,7 @@ process.name:"mimikatz.exe"
 
 Sysmon process creation telemetry was filtered for mimikatz.exe to identify credential access tooling within the compromised environment. The investigation focused on confirming process execution and examining associated command-line arguments to determine the technique attempted.
 
-# Screenshot Placeholder
-
-Caption: Figure 2 – Mimikatz process execution identified within Sysmon logs.
+# Figure 2 – Mimikatz process execution identified within Sysmon logs.
 
 ![Figure 2](images/credential-access/figure2_mimikatz_process_execution.png)
 
@@ -154,9 +150,7 @@ lsadump::dcsync /domain:eagle.local /all /csv exit
 
 The /domain:eagle.local argument identified the targeted domain, while /all specified an attempt to retrieve replication data for all domain accounts. The command established an attempted domain-level credential access operation, although successful credential extraction was not confirmed.
 
-# Screenshot Placeholder
-
-Caption: Figure 3 – Mimikatz command-line arguments revealing DCSync functionality.
+# Figure 3 – Mimikatz command-line arguments revealing DCSync functionality.
 
 ![Figure 3](images/credential-access/figure3_mimikatz_dcsync_arguments.png)
 
@@ -174,15 +168,15 @@ Unlike local credential dumping, DCSync does not require extracting credentials 
 
 A successful DCSync attack may expose:
 
-Domain Admin Accounts
+- Domain Admin Accounts
 
-Service Accounts
+- Service Accounts
 
-Privileged Users
+- Privileged Users
 
-Enterprise Admins
+- Enterprise Admins
 
-KRBTGT Account
+- KRBTGT Account
 
 The observed **/all** argument indicated an attempt to obtain replication data across domain accounts, making the potential impact substantially broader than credential theft from a single endpoint.
 
@@ -192,21 +186,35 @@ Initial Execution & Payload Delivery
 
 The investigation correlated the following activities:
 
-invoice.one
-      ↓
-PowerShell
-      ↓
-default.exe
-      ↓
-SharpHound
-      ↓
-Active Directory Enumeration
-      ↓
-Mimikatz
-      ↓
-DCSync
-      ↓
-Credential Theft
+      invoice.one
+      
+          ↓
+          
+      PowerShell
+      
+          ↓
+
+     default.exe
+     
+          ↓
+          
+    SharpHound
+    
+          ↓
+          
+ Active Directory Enumeration
+ 
+          ↓
+          
+      Mimikatz
+      
+         ↓
+         
+      DCSync
+      
+         ↓
+
+   Credential Theft
 
 The relationship between these activities reflects investigative correlation, not necessarily direct parent-child process execution. 
 
@@ -248,12 +256,19 @@ The observed activity was consistent with an Active Directory-focused intrusion;
 ## Key Findings
 
 ✓ SharpHound.exe was identified on the compromised host.
+
 ✓ SharpHound was identified as Active Directory reconnaissance tooling.
+
 ✓ Mimikatz.exe was executed successfully.
+
 ✓ Process arguments indicate DCSync functionality.
+
 ✓ The attacker targeted Active Directory credentials.
+
 ✓ The objective extended beyond workstation compromise.
+
 ✓ Evidence suggests attempted domain-level credential theft.
+
 
 No evidence was identified confirming successful extraction of domain credentials.
 
@@ -268,6 +283,8 @@ The Mimikatz DCSync command provided the strongest evidence of an attempt to obt
 ## Conclusion
 
 The Credential Access phase of the Stuxbot investigation revealed that the attacker moved beyond simple malware execution and attempted to access sensitive Active Directory credential material.
+
 Evidence showed the deployment of SharpHound for reconnaissance and Mimikatz for credential theft operations. Analysis of process arguments revealed attempted DCSync activity, indicating that the attacker sought access to password hashes stored within Active Directory.
+
 These findings significantly elevate the severity of the incident and suggest that the attacker’s objective was not limited to a single workstation, but potentially included compromise of privileged accounts and broader domain infrastructure.
 No evidence was identified confirming successful domain compromise; however, the observed attacker tooling and DCSync activity indicate that the intrusion had reached a critical stage requiring priority investigation, containment of affected systems and assessment of potentially exposed credentials before determining the appropriate credential rotation scope.
