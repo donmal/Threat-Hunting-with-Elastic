@@ -2,11 +2,13 @@
 
 ## Executive Summary
 
-The Stuxbot investigation identified multiple opportunities where attacker activity could have been detected before the intrusion progressed to later stages of the attack lifecycle.
+The Stuxbot investigation identified multiple opportunities where attacker activity could have been detected at different stages of the intrusion lifecycle.
 
 This section transforms the forensic findings collected throughout the investigation into actionable detection logic that can be implemented within Security Information and Event Management (SIEM) platforms, Endpoint Detection and Response (EDR) solutions, and Threat Hunting playbooks.
 
 Rather than relying on static Indicators of Compromise (IOCs), these detections focus on attacker behavior and abnormal process relationships.
+
+The proposed detection logic is based on observed attack artifacts, including suspicious process execution, PowerShell activity, DNS communications, Active Directory reconnaissance, credential access attempts, and persistence mechanisms. The queries represent candidate hunting and detection logic rather than fully tested production detection rules.
 
 ---
 
@@ -24,6 +26,8 @@ The highest-priority detections focus on:
 - Credential theft
 - Persistence mechanisms
 
+Detection opportunities were derived by correlating endpoint telemetry, process command lines, PowerShell Script Block Logging, and network-related events collected during the investigation.
+
 ---
 
 # Process Creation Detection
@@ -36,7 +40,7 @@ The highest-priority detections focus on:
 event.code:1 AND process.parent.name:"ONENOTE.EXE"
 ```
 
-### Why This Matters
+### Detection Rationale and Findings
 
 Microsoft OneNote normally opens notebook content.
 
@@ -58,8 +62,11 @@ invoice.bat
         ↓
 powershell.exe
 ```
+The investigation identified a suspicious execution sequence originating from Microsoft OneNote, followed by batch-file and PowerShell activity. The process relationship provides an opportunity for early-stage detection of malicious document execution.
 
 This process relationship represents one of the strongest early indicators of compromise identified during the investigation.
+
+Detection logic should prioritize unusual OneNote child processes, particularly command interpreters and scripting engines, while correlating process creation events with command-line arguments and subsequent network activity.
 
 ---
 
@@ -96,6 +103,12 @@ process.command_line:*iex*
 ```text
 process.command_line:*-enc*
 ```
+The investigation identified PowerShell execution involving the retrieval and execution of remote script content. The observed use of iex and iwr provided evidence of a download-and-execute technique.
+
+The additional queries extend detection coverage to related PowerShell execution techniques; they do not imply that every listed technique was observed during the intrusion.
+
+PowerShell detections should correlate suspicious command-line arguments with parent processes, network destinations, and Script Block Logging to reduce false positives.
+
 
 ---
 
@@ -106,6 +119,8 @@ Observed malicious domains:
 - file.io
 - pastebin.com
 - ngrok.io
+
+These domains were identified in the investigation context. Because they can also support legitimate activity, their presence alone does not establish malicious intent.
 
 Investigation query:
 
@@ -120,7 +135,7 @@ Recommended columns:
 - host.hostname
 - user.name
 
-Behavioral detections should prioritize repeated DNS requests associated with attacker-controlled infrastructure.
+Detection logic should correlate DNS requests involving the identified services with suspicious process activity, unusual outbound connections, and the execution timeline. Repeated DNS requests alone are insufficient to confirm attacker-controlled communications.
 
 ---
 
@@ -143,6 +158,10 @@ Recommended investigation:
 - Correlate with PowerShell activity.
 - Review network communications.
 
+SharpHound activity was identified during the post-exploitation investigation, providing evidence of Active Directory enumeration. Detection opportunities include identifying the executable, examining its execution context, and correlating its activity with other reconnaissance artifacts.
+
+Because executable names can be changed, process-name matching should be supplemented with command-line, file, and behavioral telemetry.
+
 ---
 
 # PowerView Detection
@@ -160,6 +179,10 @@ powershell.file.script_block_text:*Get-NetShare*
 ```
 
 These commands frequently indicate internal Active Directory reconnaissance.
+
+PowerShell Script Block Logging exposed reconnaissance-related activity during the investigation. The queries above provide candidate detection logic for identifying PowerView network share enumeration functions.
+
+Matches should be reviewed in context, as similar enumeration commands may also be used during legitimate administrative or security assessment activities.
 
 ---
 
@@ -187,7 +210,9 @@ process.command_line:*lsadump*
 process.command_line:*dcsync*
 ```
 
-The presence of Mimikatz should always be treated as a high-confidence indicator of malicious activity.
+The investigation identified Mimikatz execution with command-line arguments associated with an attempted DCSync operation. The lsadump and dcsync patterns provide relevant hunting opportunities, while sekurlsa represents an additional credential-access detection opportunity not confirmed by the observed command.
+
+Mimikatz-related execution should be prioritized for investigation, particularly when associated with unauthorized credential access activity. However, process-name matching alone is insufficient to establish malicious intent or confirm successful credential extraction.
 
 ---
 
@@ -211,11 +236,17 @@ Alternative:
 process.command_line:*.vbs
 ```
 
-Randomized VBScript files executing from user directories should be investigated immediately.
+The investigation identified a suspicious VBScript artifact, **XceGuhkzaTr0y.vbs**, associated with the persistence phase of the intrusion. Its randomized filename provided an investigative lead for examining script-based activity.
+
+The queries above can identify VBScript files and references to VBScript execution. However, they are broad hunting filters and do not independently confirm persistence.
+
+To strengthen detection confidence, script activity should be correlated with persistence-related artifacts, including scheduled tasks, registry autorun entries, startup folders, and repeated execution following user logon or system restart.
 
 ---
 
 # Detection Priorities
+
+Detection priorities were proposed based on the observed attack behaviors and their potential security impact. These classifications are illustrative and would require validation and tuning before production deployment.
 
 ## High Severity
 
@@ -226,6 +257,8 @@ Randomized VBScript files executing from user directories should be investigated
 - PowerShell Invoke-WebRequest
 - PowerShell DownloadString
 - PowerShell Invoke-Expression
+- PowerShell downloading and immediately executing remote scripts in a suspicious process context
+- Pastebin access associated with suspicious PowerShell execution at different stages of the observed intrusion
 
 ---
 
@@ -283,4 +316,6 @@ The investigation identified multiple opportunities where attacker activity coul
 
 The recommended detection logic emphasizes attacker behavior rather than static indicators, enabling defenders to identify similar intrusions even when adversaries modify their infrastructure or malware payloads.
 
-These recommendations can be directly incorporated into enterprise SIEM alerting, threat hunting playbooks, and detection engineering workflows.
+The resulting hunting queries and detection recommendations provide a foundation for developing SIEM alerts, EDR detection logic, and threat hunting playbooks. Before production deployment, these detections would require validation against representative telemetry, false-positive analysis, and environment-specific tuning.
+
+This phase demonstrates how forensic findings from the Stuxbot investigation can be translated into practical detection opportunities across process execution, PowerShell activity, network communications, Active Directory reconnaissance, credential access, and persistence.
