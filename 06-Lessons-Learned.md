@@ -85,12 +85,19 @@ This sequence summarizes the principal execution and post-exploitation stages id
 
 The entire compromise started because a user interacted with a malicious file.
 Artifact:
+
 invoice.one
+
 Although modern security products provide protection against malicious attachments, attackers continue to abuse:
+
 •	Microsoft Office files
+
 •	OneNote files
+
 •	PDF files
+
 •	Archives
+
 •	Cloud-hosted downloads
 
 These formats can be used to deliver malicious content, socially engineer users, or evade insufficiently configured attachment inspection controls.
@@ -103,19 +110,29 @@ The initial execution sequence demonstrated that user interaction with an untrus
 # Security Recommendation
 
 Implement:
+
 User Awareness Training
+
 Teach users to identify:
+
 •	Unexpected invoices
+
 •	Payment requests
+
 •	OneNote attachments
+
 •	Cloud-hosted downloads
 
 # Email Security Controls
 
 Deploy:
+
 •	Attachment Sandboxing
+
 •	URL Rewriting
+
 •	Attachment Detonation
+
 •	Threat Intelligence Enrichment
 
 Prioritize attachment inspection and user-execution controls capable of detecting embedded scripts and suspicious child-process creation, rather than relying exclusively on file extensions or known malicious hashes.
@@ -123,9 +140,13 @@ Prioritize attachment inspection and user-execution controls capable of detectin
 ## Lesson 2 – OneNote Can Be Abused for Malware Delivery
 
 The attack leveraged:
+
 invoice.one
+
 as the delivery mechanism.
+
 Historically, defenders focused heavily on:
+
 DOCM
 
 XLSM
@@ -137,8 +158,11 @@ The observed OneNote execution demonstrates why monitoring should extend beyond 
 # Detection Opportunity
 
 Monitor:
+
 ONENOTE.EXE
+
 launching:
+
 cmd.exe
 
 powershell.exe
@@ -151,14 +175,16 @@ cscript.exe
 
 event.code:1 AND process.parent.name:"ONENOTE.EXE"
 
-# Why This Is High Fidelity
+# Why This Warrants Investigation
 
 OneNote spawning command interpreters or scripting engines is an unusual parent-child process relationship that warrants investigation, particularly when associated with recently downloaded documents or subsequent network activity. The query is a hunting starting point, not a standalone high-fidelity detection rule.
 
 ## Lesson 3 – Process Chains Reveal the Entire Story
 
 A single event rarely explains an intrusion.
+
 The attack became obvious only after correlating:
+
 Process Creation
 
 File Creation
@@ -170,11 +196,17 @@ Network Connections
 # Critical Process Chain
 
 ONENOTE.EXE
+
         ↓
+        
 cmd.exe
+
         ↓
+        
 invoice.bat
+
         ↓
+        
 powershell.exe
 
 The chain above is a simplified representation of the execution flow. The exact parent-child relationships and command-line arguments should be validated against Sysmon process creation events.
@@ -182,9 +214,13 @@ The chain above is a simplified representation of the execution flow. The exact 
 # SOC Analyst Takeaway
 
 Always investigate:
+
 Parent Process
+
 Who started this?
-Child Process
+
+Child Process 
+
 What did it start?
 
 Correlate process identifiers, parent-process identifiers, timestamps, command-line arguments, file paths, and network activity to reconstruct execution sequences and distinguish legitimate administrative behavior from suspicious activity.
@@ -193,7 +229,9 @@ Correlate process identifiers, parent-process identifiers, timestamps, command-l
 ## Lesson 4 – PowerShell Remains a Primary Attack Vector
 
 PowerShell played a central role in the compromise.
+
 Observed behavior included:
+
 Remote Downloads
 
 Script Execution
@@ -205,15 +243,21 @@ Network Communications
 # Why Attackers Prefer PowerShell
 
 PowerShell:
+
 •	Exists on many Windows endpoints and servers.
+
 •	Is trusted by administrators.
+
 •	Can execute code directly in memory.
+
 •	Can be abused to execute malicious commands while blending with legitimate administrative activity.
 
 # Example Behavior Observed
 
 Download → Execute
+
 from:
+
 pastebin.com
 
 The investigation identified PowerShell-based retrieval and execution behavior associated with externally hosted content. Such activity becomes more suspicious when correlated with unusual parent processes, encoded commands, or unexpected outbound connections.
@@ -221,6 +265,7 @@ The investigation identified PowerShell-based retrieval and execution behavior a
 # Detection Recommendations
 
 Monitor:
+
 process.command_line:*DownloadString*
 and
 process.command_line:*Invoke-WebRequest*
@@ -231,13 +276,17 @@ These indicators should be combined with PowerShell Script Block Logging (Event 
 ## Lesson 5 – Public Services Are Frequently Abused
 
 The attackers leveraged legitimate platforms:
+
 Pastebin
+
 file.io
+
 ngrok
 
 # Why This Matters
 
 Blocking known malware domains is relatively easy.
+
 Blocking legitimate services is significantly harder.
 
 These services may also support legitimate workflows, making behavioral context essential when determining whether their use represents malicious activity.
@@ -245,17 +294,21 @@ These services may also support legitimate workflows, making behavioral context 
 # Observed Usage
 
 file.io
+
 Used for:
+
 Payload Delivery
 
 # Pastebin
 
 Used for:
+
 Script Hosting
 
 # Ngrok
 
 Used for:
+
 Command & Control
 
 The investigation highlighted how publicly accessible services can support different stages of an intrusion without requiring attacker-owned infrastructure for every operation.
@@ -268,12 +321,15 @@ Correlate access to file-sharing, paste-hosting, and tunneling services with end
 ## Lesson 6 – DNS Is Extremely Valuable
 
 DNS logs were instrumental throughout the investigation.
+
 Without DNS telemetry:
+
 file.io
 
 pastebin.com
 
 ngrok.io
+
 might never have been identified.
 
 # Why DNS Hunting Works
@@ -287,7 +343,9 @@ Retain DNS telemetry according to organizational risk, investigative requirement
 # Detection Examples
 
 dns.question.name:*ngrok.io*
+
 dns.question.name:*file.io*
+
 dns.question.name:*pastebin*
 
 Validate field mappings and wildcard syntax against the deployed Elastic index configuration. Domain matches should be correlated with the initiating process and surrounding network activity before being classified as malicious.
@@ -296,15 +354,21 @@ Validate field mappings and wildcard syntax against the deployed Elastic index c
 ## Lesson 7 – Command & Control Can Hide in Plain Sight
 
 The attacker leveraged:
+
 ngrok.io
+
 for command-and-control operations.
 
 # Why This Is Effective
 
 Traffic appeared as:
+
 HTTPS
+
 Port 443
+
 Encrypted
+
 which resembles normal internet activity.
 
 Encrypted tunneling services can make malicious communications harder to distinguish from legitimate HTTPS traffic when detection relies primarily on destination ports or protocol identification.
@@ -312,9 +376,13 @@ Encrypted tunneling services can make malicious communications harder to disting
 # Defensive Recommendation
 
 Monitor:
+
 •	Tunneling Services
+
 •	Dynamic DNS Services
+
 •	Rare Domains
+
 •	Newly Registered Domains
 
 # Examples
@@ -337,7 +405,9 @@ Correlating Sysmon network connection events with DNS telemetry and process exec
 ## Lesson 8 – Persistence Often Uses Simple Mechanisms
 
 The investigation identified:
+
 XceGuhkzaTr0y.vbs
+
 as a persistence-related artifact.
 
 The presence of this VBScript artifact warranted further investigation into its execution context, file location, and potential relationship with persistence mechanisms.
@@ -345,8 +415,11 @@ The presence of this VBScript artifact warranted further investigation into its 
 # Why Attackers Use Scripts
 
 Scripts are:
+
 •	Small
+
 •	Flexible
+
 •	Easy to modify
 
 Capable of executing through legitimate Windows scripting engines, potentially allowing malicious behavior to blend with routine system activity.
@@ -354,6 +427,7 @@ Capable of executing through legitimate Windows scripting engines, potentially a
 # Defensive Recommendation
 
 Monitor:
+
 .vbs
 
 .js
@@ -361,7 +435,9 @@ Monitor:
 .hta
 
 .ps1
+
 files created within:
+
 Temp
 
 Public
@@ -369,6 +445,7 @@ Public
 Downloads
 
 Startup
+
 directories.
 
 Extend monitoring to scheduled tasks, Run/RunOnce registry keys, Startup folder modifications, and suspicious execution through **wscript.exe** or **cscript.exe**.
@@ -412,14 +489,15 @@ Monitor unexpected Active Directory enumeration, privileged account activity, su
 ## Lesson 10 – DCSync Is a Critical Alert
 
 The investigation confirmed:
-DCSync Activity
-through Mimikatz.
+
+DCSync Activity through Mimikatz.
 
 The investigation identified evidence associated with Mimikatz and DCSync-related activity, highlighting the potential risk of Active Directory replication abuse. Confirmation of successful credential replication should be supported by the relevant command output or domain controller telemetry.
 
 # Why DCSync Is Dangerous
 
 DCSync allows attackers to retrieve:
+
 Password Hashes
 
 KRBTGT Hash
@@ -431,6 +509,7 @@ An attacker with sufficient directory replication privileges can request passwor
 # Security Recommendation
 
 Immediately investigate:
+
 Replication Requests
 
 Mimikatz Usage
@@ -447,6 +526,7 @@ Where unauthorized DCSync activity is confirmed, treat the incident as a potenti
 ## Lesson 11 – Multiple Log Sources Are Essential
 
 This investigation required:
+
 Sysmon
 
 Windows Logs
@@ -454,6 +534,7 @@ Windows Logs
 PowerShell Logs
 
 Zeek Logs
+
 working together.
 
 # What Each Source Contributed
@@ -481,6 +562,7 @@ Effective threat hunting requires understanding the visibility and limitations o
 ## Lesson 12 – Threat Hunting Beats Reactive Detection
 
 Many stages of the attack:
+
 PowerShell
 
 Ngrok
@@ -488,6 +570,7 @@ Ngrok
 SharpHound
 
 Mimikatz
+
 were discovered through hunting rather than alerts.
 
 The investigation demonstrated the value of hypothesis-driven analysis when reconstructing suspicious activity from available telemetry, including behaviors that may not be covered by existing detection rules.
@@ -495,6 +578,7 @@ The investigation demonstrated the value of hypothesis-driven analysis when reco
 # Why Hunting Matters
 
 Threat hunting identifies:
+
 Unknown Threats
 
 Missed Alerts
@@ -506,10 +590,15 @@ Threat hunting can uncover previously undetected activity and improve detection 
 # SOC Recommendation
 
 Conduct recurring hunts focused on:
+
 PowerShell Abuse
+
 Credential Access
+
 AD Enumeration
+
 Tunneling Services
+
 Rare Parent-Child Process Relationships
 
 # Detection Engineering Opportunities
@@ -517,9 +606,13 @@ Rare Parent-Child Process Relationships
 The investigation provides several opportunities to translate hunting findings into reusable detection logic:
 
 - Identify OneNote spawning command interpreters or scripting engines.
+  
 - Detect suspicious PowerShell download-and-execute patterns.
+  
 - Correlate access to public tunneling services with unusual endpoint processes.
+
 - Identify unexpected execution of Active Directory reconnaissance tools.
+  
 - Monitor suspicious credential access and directory replication behavior.
 
 
@@ -530,11 +623,17 @@ These detections should be tested against representative benign and malicious ac
 # Immediate Actions
 
 - Reset Compromised Credentials
+  
 - Audit Domain Admin Accounts
+  
 - Investigate and contain endpoints associated with confirmed malicious activity.
+  
 - Review connections to ngrok, file.io, and Pastebin, applying targeted restrictions where justified.
+  
 - Revoke compromised sessions and reset affected credentials where compromise is confirmed.
+  
 - Review privileged accounts, Active Directory replication permissions, and suspicious authentication events.
+  
 - Preserve relevant endpoint and network evidence to support incident scoping and response.
 
 Immediate containment actions should be based on confirmed findings and the assessed scope of compromise, rather than indiscriminately blocking services that may have legitimate organizational uses.
@@ -562,10 +661,15 @@ Conduct Purple Team Exercises
 ## Key Takeaways
 
 What Worked Well
+
 ✓ Sysmon logging
+
 ✓ DNS visibility
+
 ✓ Zeek telemetry
+
 ✓ Process correlation
+
 ✓ PowerShell logging
 
 These telemetry sources supported the reconstruction of the attack sequence and demonstrated the investigative value of combining endpoint and network evidence.
@@ -573,8 +677,11 @@ These telemetry sources supported the reconstruction of the attack sequence and 
 ## What Could Be Improved
 
 ✓ Earlier detection of OneNote abuse
+
 ✓ Earlier detection of PowerShell activity
+
 ✓ Earlier detection of Ngrok communications
+
 ✓ Better monitoring of credential theft activity
 
 These improvements represent potential detection and monitoring opportunities identified during the investigation, rather than verified weaknesses in a production security environment.
@@ -598,9 +705,13 @@ The Stuxbot investigation demonstrates how a modern intrusion can progress from 
 The attack successfully leveraged:
 
 •	User execution
+
 •	PowerShell
+
 •	Public cloud services
+
 •	Tunneling infrastructure
+
 •	Credential theft tooling
 
 to establish persistence, maintain command-and-control access, and onduct activity consistent with attempts to obtain broader access within the Active Directory environment.
