@@ -686,11 +686,11 @@ These improvements represent potential detection and monitoring opportunities id
   
 - **Detection context**: Legitimate administrative tools and public services require behavioral analysis before being classified as malicious
  
--**Visibility limitations**: The absence of a log event does not necessarily establish that an activity did not occur.
+- **Visibility limitations**: The absence of a log event does not necessarily establish that an activity did not occur.
 
--**Evidence confidence**: Analysts should distinguish observed execution, suspected attacker objectives, and confirmed compromise outcomes.
+- **Evidence confidence**: Analysts should distinguish observed execution, suspected attacker objectives, and confirmed compromise outcomes.
 
--**Detection development**: Investigation findings can inform reusable detection rules and improve future SOC workflows.
+- **Detection development**: Investigation findings can inform reusable detection rules and improve future SOC workflows.
 
 ## Final Conclusions
 
