@@ -253,7 +253,9 @@ Elastic Discover identified eight Zeek events matching IP address **34.197.10.85
 The investigation observed:
 
 •	Repeated DNS requests
+
 •	Repeated HTTPS connections
+
 •	Activity spanning multiple days
 
 These observations are consistent with potential command-and-control (C2) activity, although recurring communications alone do not establish malicious command exchange.
