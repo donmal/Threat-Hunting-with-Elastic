@@ -172,15 +172,21 @@ DNS telemetry identified repeated queries for **file.io**, indicating potential 
 Correlation between:
 
 •	DNS activity
+
 •	Connection activity
+
 •	File creation
 
 revealed a consistent timeline.
 
-DNS Query
+  DNS Query
+  
       ↓
+      
 Connection
+
       ↓
+      
 invoice.one Created
 
 The timing supported the hypothesis that **invoice.one** was delivered through the identified external infrastructure. 
