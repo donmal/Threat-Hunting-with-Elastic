@@ -242,9 +242,9 @@ Returned infrastructure included:
 
 ## Evidence
 
-**Figure 5 – Network connections to resolved file.io infrastructure**
+**Figure 5 – Network Activity Associated with Suspected file.io infrastructure**
 
-Network telemetry confirmed successful communication between the compromised workstation and the infrastructure associated with **file.io**, supporting the suspected payload delivery sequence. 
+Elastic Discover identified eight Zeek events matching IP address **34.197.10.85** on March 25, 2023. This activity was investigated for its potential association with **file.io** infrastructure and its possible role in the suspected payload delivery sequence.
 
 ![Figure 5](images/network-investigation/figure5_fileio_connections.png)
 
