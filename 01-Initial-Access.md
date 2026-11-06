@@ -334,7 +334,7 @@ This address became the primary pivot point for the network investigation docume
 
 Sysmon Event ID 3 identifying network activity originating from the workstation **WS001**, and confirming source IP **192.168.28.130**.
 
-![Figure 4](images/initial-access/figure4_network_connection.png)
+![Figure 4](images/initial-access/figure4_network_activity.png)
 
 ---
 
