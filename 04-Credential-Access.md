@@ -10,13 +10,21 @@ The findings established evidence of an attempted domain-level credential access
 # Investigation Objectives
 
 The objectives of this investigation phase were:
+
 •	Determine whether attacker activity involved credential theft.
+
 •	Identify credential access tooling used during the intrusion.
+
 •	Analyze execution of SharpHound and Mimikatz.
+
 •	Determine whether Active Directory was targeted.
+
 •	Identify evidence of DCSync activity.
+
 •	Assess the likelihood of domain compromise.
+
 •	Document attacker objectives and impact.
+
 
 # Previous Investigation Findings
 
