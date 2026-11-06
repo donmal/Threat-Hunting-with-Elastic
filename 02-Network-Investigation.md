@@ -71,11 +71,17 @@ DNS telemetry was examined to identify domains queried by WS001, establish exter
 ## Initial Findings 
 
 The query returned over two hundred DNS events.
+
 Many were expected:
+
 •	Microsoft services
+
 •	Google services
+
 •	Browser telemetry
+
 •	Update mechanisms
+
 These events represented normal background activity.
 
 # Noise Reduction 
