@@ -4,7 +4,9 @@ Hack The Box Academy lab write-up | Practical credential access investigation
 ## Executive Summary
 
 Following the identification of malicious payload execution and suspicious external network communications, the investigation shifted toward determining whether the attacker attempted to obtain credentials from the Active Directory environment.
+
 Analysis of Sysmon telemetry identified the deployment and execution of two well-known offensive security tools: SharpHound and Mimikatz. Their presence indicates that the attacker had progressed beyond initial compromise and was actively targeting the Active Directory environment. SharpHound was identified as Active Directory reconnaissance tooling, potentially supporting the identification of privilege escalation paths, while Mimikatz was executed with arguments indicating an attempted DCSync attack against the domain.
+
 The findings established evidence of an attempted domain-level credential access operation, significantly increasing the potential severity of the intrusion. Successful credential extraction or domain compromise was not confirmed by the available telemetry.
 
 # Investigation Objectives
