@@ -1,5 +1,5 @@
 # Hunting for Stuxbot – Threat Hunting & Incident Response Investigation
-Hack-the-Box Academy lab write-up
+Hack-the-Box Academy lab write-up.
 
 ## Overview
 
