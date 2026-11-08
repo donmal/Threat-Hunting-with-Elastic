@@ -1,5 +1,4 @@
 # 04 - Credential-Access Investigation
-Hack The Box Academy write-up | Credential access investigation
 
 ## Executive Summary
 
