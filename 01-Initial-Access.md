@@ -1,5 +1,4 @@
 # 01 – Initial Access Investigation
-Hack The Box Academy | Simulated Threat Hunting
 
 ## Executive Summary
 
