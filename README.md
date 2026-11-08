@@ -1,5 +1,5 @@
 # Hunting for Stuxbot – Threat Hunting & Incident Response Investigation
-Write-up of Hack The Box Academy Threat Hunting with Elastic.
+Hack-the-Box Academy lab write-up
 
 ## Overview
 
