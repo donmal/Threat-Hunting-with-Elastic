@@ -1,5 +1,5 @@
 # 05 – Indicators of Compromise (IOCs) & Detection Engineering
-Hack The Box Academy lab write-up | IOC Analysis & Detection Engineering Practice
+Hack The Box Academy write-up | IOC Analysis & Detection Engineering 
 
 ## Executive Summary
 
